@@ -1,0 +1,16 @@
+# approaches
+##(bash)
+1- those scripts are supposed to serialize everything under given directory, package, zip, then translate it to hex form to be read through the browser.
+##python
+2- open TCP connection to my local machine, and transfer everything.
+
+#2
+- I can write any where except under /root
+- can i update the current ipynb? if so then i can append the content, and copy it, but better than this to copy large amount of data is transfering it through TCP.
+- even wget is installed, so i need to publish the client in python online, as well as setup bash script, and wget setup script, and run it, to download and execute the python script.
+- in all cases the ip isn't known, therefore i need to run the client on the target machine.
+- to keep the directory tree, tar, and zip the whole given path.
+- the py script expect to read a file /tmp/scrub.tar.zip
+
+#1
+- But there is a problem, i can't write any file! but i may execute the script from a string at the terminal.
