@@ -3,10 +3,11 @@
 #TODO rename to scrap
 
 scrap_dir=$(pwd)
-scrap_tar=/tmp/scrap.tar
-scrap_zip=/tmp/scrap.zip
+scrap=/tmp/scrap.tar.gz
 if $# -gt 2; then
-    scrab_dir=$1
+    scrap_dir=$1
 fi
-tar cvf $scrap_tar $scrap_dir 2>/dev/null 
-zip $scrap_zip $scrap_tar 2>/dev/null
+# to be able to transfer any bytes through python3,
+# i need the array to be translated to hex,
+# in order to be able to encode it in utf-8.
+tar -czvf $scrap $scrap_dir 2>/dev/null

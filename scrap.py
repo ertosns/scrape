@@ -3,6 +3,7 @@
 import socket
 import sys
 import time
+import gzip
 from threading import Thread
 from argparse import ArgumentParser
 
@@ -51,17 +52,18 @@ class ScrapServer(Thread):
 
 def init_server(path, host, port):
     # read payload
-    f=open(path, 'r')
+    #TODO (fix) send it compressed
+    f=gzip.open(path, 'rb')
     raw = f.read()
     f.close()
     braw = bytes(raw, encoding='utf-8')
     # bind the socket
     s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind((host, port))
+    #TODO (res) bind on ip
+    s.bind(('', port))
     threads = []
     def listen_run():
-        #TODO (res)
         s.listen(1)
         sock, addr=s.accept()
         thread=ScrapServer(addr[0],addr[1], sock, braw)
@@ -83,7 +85,7 @@ def init_server(path, host, port):
     finalise()
 
 def init_client(path, host, port):
-    with open(path+host, 'w') as f:
+    with gzip.open(path, 'w') as f: #TODO (fix) i remove host from path because host name might include back-slash.
         s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         s.connect((host, port))
         time.sleep(1)
@@ -91,9 +93,24 @@ def init_client(path, host, port):
         try:
             num=s.recv(4, socket.MSG_DONTWAIT)
             num=int.from_bytes(num, ENDIAN)
-            print("num: ", num)
-            payload=s.recv(num, socket.MSG_DONTWAIT).decode('utf-8', errors='ignore')
-            f.write(payload)
+            print("file size being received: ", num)
+            # why does the recv fails to read sufficient data,
+            # perhaps there are limitations over it's size.
+            # i should try to read several times.
+            # also check send, doesn't it send all the payload?!
+            size_read=0
+            pack=[]
+            pack_len=4096
+            while size_read < num:
+                if num-size_read < pack_len:
+                    pack_len=num-size_read
+                payload=s.recv(pack_len)
+                pack.append(payload)
+                payload_len=len(payload)
+                size_read+=payload_len
+            print("harnest pack of payload of len: ", len(pack))
+            for payload in pack:
+                f.write(payload)
         except Exception as e:
             print("recv error: ", e.__class__)
             print("recv error: ", e)
