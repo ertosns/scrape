@@ -1,2 +1,118 @@
-scrap_tar=/tmp/scrap.tar
-scrip_zip=/tmp/scrap.zip
+#!/usr/bin/python
+
+import socket
+import sys
+import time
+from threading import Thread
+from argparse import ArgumentParser
+
+INT_LEN=4
+ENDIAN='little'
+#python3 int.to_bytes is more appropriate,
+# it translate int to bytes object rather than a bytes of list!
+def int2bytes(size):
+    # assume little endeaness int=b1b2b3b4
+    b1 = size & 0xff
+    b2 = (size >> 8) & 0xff
+    b3 = (size >> 16) & 0xff
+    b4 = (size >> 24) & 0xff
+    return bytes([b1, b2, b3, b4])
+
+#similarly python3 int.from_bytes translates bytes directly to int in a single line!
+def bytes2int(B):
+    print("B type is: ", type(B))
+    print("B", B)
+    b1=int(B[0])
+    b2=int(B[1])
+    b3=int(B[2])
+    b4=int(B[3])
+    num=((b1 << 24) & 0xffffffff) | \
+        ((b2 << 16) & 0xffffffff) | \
+        ((b3 << 8) & 0xffffffff) | \
+        (b4 & 0xffffffff)
+    return int
+
+class ScrapServer(Thread):
+    def __init__(self, addr, port, sock, msg):
+        Thread.__init__(self)
+        self.addr=addr
+        self.port=port
+        self.socket=sock
+        self.payload=msg
+        self.len=len(self.payload)
+        print("handshake with %s on port %d for transfering a message of length %d." % (self.addr, self.port, self.len))
+        
+    def run(self):
+        print("transfer starting with %s" % self.addr)
+        self.socket.send(self.len.to_bytes(INT_LEN, ENDIAN))
+        self.socket.send(self.payload)
+        self.socket.close()
+        print("finshed with %s" % self.addr)
+
+def init_server(path, host, port):
+    # read payload
+    f=open(path, 'r')
+    raw = f.read()
+    f.close()
+    braw = bytes(raw, encoding='utf-8')
+    # bind the socket
+    s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.bind((host, port))
+    threads = []
+    def listen_run():
+        #TODO (res)
+        s.listen(1)
+        sock, addr=s.accept()
+        thread=ScrapServer(addr[0],addr[1], sock, braw)
+        thread.start()
+        threads.append(thread)
+    def finalise():
+        for t in threads:
+            t.join()
+        s.close()
+    while True:
+        try:
+            listen_run()
+        except Exception as e:
+            print("send failed!: ", e.__class__)
+            print(e)
+        except KeyboardInterrupt:
+            print("exiting...")
+            break
+    finalise()
+
+def init_client(path, host, port):
+    with open(path+host, 'w') as f:
+        s=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+        s.connect((host, port))
+        time.sleep(1)
+        payload=''
+        try:
+            num=s.recv(4, socket.MSG_DONTWAIT)
+            num=int.from_bytes(num, ENDIAN)
+            print("num: ", num)
+            payload=s.recv(num, socket.MSG_DONTWAIT).decode('utf-8', errors='ignore')
+            f.write(payload)
+        except Exception as e:
+            print("recv error: ", e.__class__)
+            print("recv error: ", e)
+        s.close()
+
+parser=ArgumentParser()
+parser.add_argument('-p', '--port', default=54321, type=int, help="set server port")
+parser.add_argument('-i', '--infile', default='/tmp/scrap.zip', type=str, help='path to file to transfer')
+parser.add_argument('-o', '--outfile', default='/tmp/out', type=str, help='path to file to transfer')
+parser.add_argument('-t', '--etype', default='s', type=str, help="choose weither to run it as server/client")
+parser.add_argument('-a', '--addr', default=socket.gethostname(), type=str, help="the client/server address")
+args = parser.parse_args()
+host = args.addr
+port = args.port
+inpath = args.infile
+outpath = args.outfile
+execution = args.etype
+
+if execution=='s':
+    init_server(inpath, host, port)
+elif execution=='c':
+    init_client(outpath, host, port)
