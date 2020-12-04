@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+'''
+you are expected to use scrap script as client/server, in case you know the ip of the compromized shell, and you need to copy data from the compromized machine to the home machine.
+'''
+
 import socket
 import sys
 import time
@@ -9,6 +13,8 @@ from argparse import ArgumentParser
 
 INT_LEN=4
 ENDIAN='little'
+
+
 #python3 int.to_bytes is more appropriate,
 # it translate int to bytes object rather than a bytes of list!
 def int2bytes(size):
@@ -58,7 +64,7 @@ def init_server(path, host, port):
     f.close()
     braw = bytes(raw, encoding='utf-8')
     # bind the socket
-    s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s=socket.socket(spocket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     #TODO (res) bind on ip
     s.bind(('', port))
