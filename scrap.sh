@@ -4,7 +4,8 @@
 
 scrap_dir=$(pwd)
 scrap=/tmp/scrap.tar.gz
-if $# -gt 2; then
+
+if [ $# -gt 2 ]; then
     scrap_dir=$1
 fi
 
