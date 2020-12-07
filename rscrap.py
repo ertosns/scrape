@@ -50,6 +50,7 @@ class ScrapServer(Thread):
         except Exception as e:
             print("recv error: ", e.__class__)
             print("recv error: ", e)
+        print("done!")
         self.socket.close()        
         self.f.close()
         
@@ -101,7 +102,7 @@ def init_client(path, host, port):
     s.close()
 
 parser=ArgumentParser()
-parser.add_argument('-p', '--port', default=54321, type=int, help="set server port")
+parser.add_argument('-p', '--port', default=80, type=int, help="set server port")
 parser.add_argument('-i', '--infile', default='/tmp/scrap.tar.gz', type=str, help='path to file to transfer')
 parser.add_argument('-o', '--outfile', default='/tmp/out', type=str, help='path to file to transfer')
 parser.add_argument('-t', '--etype', default='s', type=str, help="choose weither to run it as server/client")
