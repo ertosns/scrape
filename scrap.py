@@ -62,7 +62,7 @@ def init_server(path, host, port):
     f.close()
     braw = raw
     # bind the socket
-    s=socket.socket(spocket.AF_INET, socket.SOCK_STREAM)
+    s=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     #TODO (res) bind on ip
     s.bind(('', port))
